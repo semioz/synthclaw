@@ -1,0 +1,53 @@
+[package]
+name = "synthclaw"
+version = "0.1.0"
+edition = "2024"
+description = "Lightweight synthetic data generation library powered by LLMs"
+license = "MIT"
+repository = "https://github.com/semioz/synthclaw"
+keywords = ["synthetic-data", "llm", "data-generation", "huggingface"]
+categories = ["command-line-utilities", "data-structures"]
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP & API clients
+reqwest = { version = "0.12", features = ["json", "stream"] }
+
+# Data handling
+polars = { version = "0.46", features = ["parquet", "lazy", "csv", "json"] }
+hf-hub = "0.4"
+
+# Config & serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+
+# Progress & UX
+indicatif = "0.17"
+console = "0.15"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Async utilities
+futures = "0.3"
+tokio-stream = "0.1"
+async-trait = "0.1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[[bin]]
+name = "synthclaw"
+path = "src/main.rs"
+
+[lib]
+name = "synth_claw"
+path = "src/lib.rs"
