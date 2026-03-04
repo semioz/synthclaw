@@ -23,6 +23,9 @@ pub enum Error {
     #[error("YAML error: {0}")]
     Yaml(#[from] serde_yaml::Error),
 
+    #[error("CSV error: {0}")]
+    Csv(#[from] csv::Error),
+
     #[error("Checkpoint error: {0}")]
     Checkpoint(String),
 

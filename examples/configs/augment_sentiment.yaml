@@ -4,23 +4,18 @@ source:
   type: huggingface
   dataset: "cornell-movie-review-data/rotten_tomatoes"
   split: "train"
-  sample: 1000
+  sample: 100
 
 provider:
   type: openai
   model: "gpt-4o-mini"
+  temperature: 0.7
 
 generation:
   task: augment
-  count_per_example: 3
+  count_per_example: 2
   concurrency: 10
   strategy: paraphrase
-  strategy_config:
-    preserve_sentiment: true
-    style_variations:
-      - formal
-      - casual
-      - technical
 
 output:
   format: jsonl
@@ -28,4 +23,4 @@ output:
 
 checkpoint:
   enabled: true
-  path: ".synthclaw/checkpoint.json"
+  interval: 50
