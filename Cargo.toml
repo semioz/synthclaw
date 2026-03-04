@@ -1,16 +1,25 @@
 [package]
 name = "synthclaw"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+rust-version = "1.75"
 description = "Lightweight synthetic data generation library powered by LLMs"
 license = "MIT"
 repository = "https://github.com/semioz/synthclaw"
+readme = "README.md"
 keywords = ["synthetic-data", "llm", "data-generation", "huggingface"]
 categories = ["command-line-utilities", "data-structures"]
 
+[features]
+default = ["cli"]
+cli = ["dep:clap", "dep:indicatif", "dep:console", "dep:tracing-subscriber"]
+
 [dependencies]
-# CLI
-clap = { version = "4", features = ["derive"] }
+# CLI (optional)
+clap = { version = "4", features = ["derive"], optional = true }
+indicatif = { version = "0.17", optional = true }
+console = { version = "0.15", optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
@@ -29,10 +38,6 @@ serde_json = "1"
 serde_yaml = "0.9"
 regex = "1"
 
-# Progress & UX
-indicatif = "0.17"
-console = "0.15"
-
 # Error handling
 thiserror = "2"
 anyhow = "1"
@@ -44,11 +49,11 @@ async-trait = "0.1"
 
 # Logging
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [[bin]]
 name = "synthclaw"
 path = "src/main.rs"
+required-features = ["cli"]
 
 [lib]
 name = "synth_claw"
@@ -56,3 +61,5 @@ path = "src/lib.rs"
 
 [dev-dependencies]
 tempfile = "3"
+assert_cmd = "2"
+predicates = "3"

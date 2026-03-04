@@ -7,23 +7,27 @@ use cli::{datasets, estimate, generate, resume};
 
 #[derive(Parser)]
 #[command(name = "synthclaw")]
-#[command(author, version, about = "Lightweight synthetic data generation.")]
+#[command(author, version, about = "Lightweight synthetic data generation CLI")]
 #[command(propagate_version = true)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
 
+    /// Enable verbose output
     #[arg(short, long, global = true)]
     verbose: bool,
 }
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Generate synthetic data from scratch or augment existing datasets
     Generate(generate::GenerateArgs),
+    /// Search, explore and preview HuggingFace datasets
     #[command(subcommand)]
     Datasets(datasets::DatasetsCommand),
+    /// Resume an interrupted generation from checkpoint
     Resume(resume::ResumeArgs),
-    /// estimate cost for a generation job without running it
+    /// Estimate cost for a generation job without running it
     Estimate(estimate::EstimateArgs),
 }
 

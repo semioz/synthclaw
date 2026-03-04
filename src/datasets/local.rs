@@ -89,10 +89,10 @@ impl LocalSource {
         }
     }
 
-    fn detect_csv_info(path: &PathBuf) -> Result<(Vec<String>, usize)> {
+    fn detect_csv_info(path: &std::path::Path) -> Result<(Vec<String>, usize)> {
         let df = CsvReadOptions::default()
             .with_has_header(true)
-            .try_into_reader_with_file_path(Some(path.clone()))
+            .try_into_reader_with_file_path(Some(path.to_path_buf()))
             .map_err(|e| Error::Dataset(e.to_string()))?
             .finish()
             .map_err(|e| Error::Dataset(e.to_string()))?;
@@ -125,10 +125,8 @@ impl LocalSource {
         let mut records = Vec::new();
 
         for (i, line) in reader.lines().enumerate() {
-            if let Some(n) = sample {
-                if records.len() >= n {
-                    break;
-                }
+            if sample.is_some_and(|n| records.len() >= n) {
+                break;
             }
 
             let line = line.map_err(|e| Error::Dataset(e.to_string()))?;

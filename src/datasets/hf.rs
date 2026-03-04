@@ -187,7 +187,7 @@ impl DataSource for HuggingFaceSource {
         let mut df = self.download_and_read_parquet()?;
 
         if let Some(cols) = &self.columns {
-            let col_exprs: Vec<_> = cols.iter().map(|c| col(c)).collect();
+            let col_exprs: Vec<_> = cols.iter().map(col).collect();
             df = df
                 .lazy()
                 .select(col_exprs)

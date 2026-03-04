@@ -89,10 +89,8 @@ async fn info(args: InfoArgs) -> anyhow::Result<()> {
 
     println!("\n{}", style("Dataset Info:").bold());
     println!("  Name: {}", style(&info.name).green());
-    if let Some(desc) = &info.description {
-        if !desc.is_empty() {
-            println!("  Description: {}", desc);
-        }
+    if info.description.as_ref().is_some_and(|d| !d.is_empty()) {
+        println!("  Description: {}", info.description.as_ref().unwrap());
     }
     println!("  Total rows: {}", info.num_rows);
     println!("  Columns: {}", info.columns.join(", "));

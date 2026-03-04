@@ -72,7 +72,7 @@ impl CsvWriter {
             .truncate(true)
             .open(path)?;
         let mut writer = csv::Writer::from_writer(file);
-        writer.write_record(&[
+        writer.write_record([
             "content",
             "source_index",
             "category",
@@ -85,7 +85,7 @@ impl CsvWriter {
 
 impl OutputWriter for CsvWriter {
     fn write(&mut self, result: &GenerationResult) -> Result<()> {
-        self.writer.write_record(&[
+        self.writer.write_record([
             &result.content,
             &result
                 .source_index

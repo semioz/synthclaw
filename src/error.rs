@@ -25,12 +25,6 @@ pub enum Error {
 
     #[error("CSV error: {0}")]
     Csv(#[from] csv::Error),
-
-    #[error("Checkpoint error: {0}")]
-    Checkpoint(String),
-
-    #[error("Generation aborted: {0}")]
-    Aborted(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

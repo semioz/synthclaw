@@ -17,22 +17,11 @@ pub trait DataSource: Send + Sync {
     fn load(&mut self, sample: Option<usize>) -> Result<Vec<Record>>;
 }
 
+#[derive(Default)]
 pub struct DatasetInfo {
     pub name: String,
     pub description: Option<String>,
     pub num_rows: usize,
     pub columns: Vec<String>,
     pub splits: Vec<Split>,
-}
-
-impl Default for DatasetInfo {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            description: None,
-            num_rows: 0,
-            columns: Vec::new(),
-            splits: Vec::new(),
-        }
-    }
 }
