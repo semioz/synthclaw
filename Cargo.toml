@@ -16,7 +16,7 @@ clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 
 # HTTP & API clients
-reqwest = { version = "0.12", features = ["json", "stream"] }
+reqwest = { version = "0.12", features = ["json", "stream", "blocking"] }
 
 # Data handling
 polars = { version = "0.46", features = ["parquet", "lazy", "csv", "json"] }
@@ -51,3 +51,6 @@ path = "src/main.rs"
 [lib]
 name = "synth_claw"
 path = "src/lib.rs"
+
+[dev-dependencies]
+tempfile = "3"
