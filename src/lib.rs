@@ -1,4 +1,3 @@
-pub mod checkpoint;
 pub mod config;
 pub mod datasets;
 pub mod generation;

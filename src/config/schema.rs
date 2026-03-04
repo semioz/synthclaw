@@ -10,8 +10,6 @@ pub struct SynthConfig {
     pub provider: ProviderConfig,
     pub generation: GenerationConfig,
     pub output: OutputConfig,
-    #[serde(default)]
-    pub checkpoint: CheckpointConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -140,24 +138,6 @@ pub enum OutputFormat {
     Parquet,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct CheckpointConfig {
-    #[serde(default)]
-    pub enabled: bool,
-    #[serde(default = "default_checkpoint_path")]
-    pub path: PathBuf,
-    #[serde(default = "default_checkpoint_interval")]
-    pub interval: usize,
-}
-
-fn default_checkpoint_path() -> PathBuf {
-    PathBuf::from(".synthclaw/checkpoint.json")
-}
-
-fn default_checkpoint_interval() -> usize {
-    100
-}
-
 impl SynthConfig {
     pub fn from_yaml(content: &str) -> crate::Result<Self> {
         serde_yaml::from_str(content).map_err(Into::into)
@@ -197,9 +177,6 @@ generation:
 output:
   format: jsonl
   path: "./output/augmented.jsonl"
-
-checkpoint:
-  enabled: true
 "#;
 
         let config = SynthConfig::from_yaml(yaml).unwrap();

@@ -47,7 +47,7 @@ pub struct StatsSnapshot {
     pub total_output_tokens: u64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GenerationResult {
     pub content: String,
     pub source_index: Option<usize>,
@@ -56,7 +56,6 @@ pub struct GenerationResult {
     pub output_tokens: u32,
 }
 
-/// Task to be processed by the generation engine
 struct GenerationTask_ {
     prompt: String,
     system_prompt: Option<String>,
@@ -180,7 +179,6 @@ impl GenerationEngine {
         let mut tasks = Vec::with_capacity(count);
 
         if let Some(cats) = categories {
-            // Distribute evenly across categories
             let per_category = count / cats.len();
             let remainder = count % cats.len();
 
@@ -196,7 +194,6 @@ impl GenerationEngine {
                 }
             }
         } else {
-            // No categories - generate with index only
             for i in 0..count {
                 tasks.push(GenerationTask_ {
                     prompt: prompt_builder.build_for_category("default", i),
@@ -327,7 +324,6 @@ mod tests {
                 path: "./output.jsonl".into(),
                 batch_size: 100,
             },
-            checkpoint: CheckpointConfig::default(),
         }
     }
 

@@ -20,7 +20,3 @@ generation:
 output:
   format: jsonl
   path: "./output/augmented_sentiment.jsonl"
-
-checkpoint:
-  enabled: true
-  interval: 50

@@ -124,7 +124,6 @@ fn build_config_from_args(args: &GenerateArgs) -> anyhow::Result<SynthConfig> {
             path: output_path,
             batch_size: 100,
         },
-        checkpoint: CheckpointConfig::default(),
     })
 }
 
