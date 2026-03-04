@@ -1,0 +1,26 @@
+name: "product_reviews"
+
+provider:
+  type: anthropic
+  model: "claude-3-5-sonnet-20241022"
+  temperature: 0.8
+
+generation:
+  task: generate
+  count: 500
+  concurrency: 5
+  categories:
+    - electronics
+    - books
+    - clothing
+    - home_kitchen
+    - sports
+  template: |
+    Generate a realistic {category} product review.
+    The review should be 2-4 sentences and feel authentic.
+    Include specific product details.
+    Output only the review text.
+
+output:
+  format: parquet
+  path: "./output/product_reviews.parquet"

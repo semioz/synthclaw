@@ -1,0 +1,37 @@
+name: "qa_pairs"
+
+source:
+  type: local
+  path: "./data/documents.jsonl"
+  format: jsonl
+
+provider:
+  type: openai
+  model: "gpt-4o"
+  temperature: 0.7
+
+generation:
+  task: augment
+  count_per_example: 5
+  concurrency: 8
+  template: |
+    Based on the following document:
+    ---
+    {text}
+    ---
+    
+    Generate a question-answer pair that tests comprehension of this document.
+    Format your response as JSON:
+    {"question": "...", "answer": "..."}
+  system_prompt: |
+    You are an expert at creating educational question-answer pairs.
+    Generate questions that require understanding, not just keyword matching.
+
+output:
+  format: jsonl
+  path: "./output/qa_pairs.jsonl"
+  batch_size: 50
+
+checkpoint:
+  enabled: true
+  interval: 50

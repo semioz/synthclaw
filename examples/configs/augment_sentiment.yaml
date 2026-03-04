@@ -1,0 +1,31 @@
+name: "sentiment_augmentation"
+
+source:
+  type: huggingface
+  dataset: "cornell-movie-review-data/rotten_tomatoes"
+  split: "train"
+  sample: 1000
+
+provider:
+  type: openai
+  model: "gpt-4o-mini"
+
+generation:
+  task: augment
+  count_per_example: 3
+  concurrency: 10
+  strategy: paraphrase
+  strategy_config:
+    preserve_sentiment: true
+    style_variations:
+      - formal
+      - casual
+      - technical
+
+output:
+  format: jsonl
+  path: "./output/augmented_sentiment.jsonl"
+
+checkpoint:
+  enabled: true
+  path: ".synthclaw/checkpoint.json"
