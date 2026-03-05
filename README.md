@@ -1,6 +1,9 @@
 # synthclaw
 
-Lightweight synthetic data generation in Rust. Generate and augment datasets using LLMs (OpenAI, Anthropic) with support for HuggingFace datasets.
+[![Crates.io](https://img.shields.io/crates/v/synthclaw.svg)](https://crates.io/crates/synthclaw)
+[![Documentation](https://docs.rs/synthclaw/badge.svg)](https://docs.rs/synthclaw)
+
+Lightweight synthetic data generation in Rust. Generate and augment datasets using OpenAI, Anthropic with support for HuggingFace datasets.
 
 Available as both a CLI tool and a Rust library.
 
@@ -9,14 +12,14 @@ Available as both a CLI tool and a Rust library.
 ### CLI
 
 ```bash
-cargo install --path .
+cargo install synthclaw
 ```
 
 ### Library
 
 ```toml
 [dependencies]
-synth_claw = { git = "https://github.com/semioz/synthclaw" }
+synthclaw = "0.1"
 ```
 
 ## Quick Start
@@ -124,19 +127,6 @@ system_prompt: |
   Generate educational Q&A pairs. Output ONLY valid JSON.
 ```
 
-### Bad Prompts (avoid these)
-
-```yaml
-# Too vague - LLM will add explanations
-template: "Generate something for {category}"
-
-# Missing variable
-template: "Generate a review"  # error: no {category} but categories specified
-
-# Wrong variable for mode
-template: "Paraphrase {text}"  # error in generate mode: {text} not available
-```
-
 ## Configuration
 
 ### Generate from Scratch
@@ -209,7 +199,7 @@ generation:
 ## Library Usage
 
 ```rust
-use synth_claw::{
+use synthclaw::{
     config::SynthConfig,
     datasets::{HuggingFaceSource, DataSource},
     providers::{create_provider, GenerationRequest},
