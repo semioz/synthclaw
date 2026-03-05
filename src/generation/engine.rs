@@ -89,7 +89,7 @@ impl GenerationEngine {
 
     /// Run generation and collect all results
     pub async fn run(&self, config: &SynthConfig) -> Result<Vec<GenerationResult>> {
-        let tasks = self.build_tasks(config)?;
+        let tasks = self.build_tasks(config).await?;
         let results = Arc::new(Mutex::new(Vec::with_capacity(tasks.len())));
         
         stream::iter(tasks)
@@ -130,7 +130,7 @@ impl GenerationEngine {
     where
         F: FnMut(GenerationResult) + Send,
     {
-        let tasks = self.build_tasks(config)?;
+        let tasks = self.build_tasks(config).await?;
         let callback = Arc::new(Mutex::new(on_result));
         
         stream::iter(tasks)
@@ -162,12 +162,12 @@ impl GenerationEngine {
         Ok(())
     }
 
-    fn build_tasks(&self, config: &SynthConfig) -> Result<Vec<GenerationTask_>> {
+    async fn build_tasks(&self, config: &SynthConfig) -> Result<Vec<GenerationTask_>> {
         let prompt_builder = self.create_prompt_builder();
         
         match &config.generation.task {
             GenerationTask::Generate => self.build_generate_tasks(&prompt_builder),
-            GenerationTask::Augment => self.build_augment_tasks(config, &prompt_builder),
+            GenerationTask::Augment => self.build_augment_tasks(config, &prompt_builder).await,
         }
     }
 
@@ -207,11 +207,11 @@ impl GenerationEngine {
         Ok(tasks)
     }
 
-    fn build_augment_tasks(&self, config: &SynthConfig, prompt_builder: &PromptBuilder) -> Result<Vec<GenerationTask_>> {
+    async fn build_augment_tasks(&self, config: &SynthConfig, prompt_builder: &PromptBuilder) -> Result<Vec<GenerationTask_>> {
         let source_config = config.source.as_ref()
             .ok_or_else(|| Error::Config("Augment task requires a source configuration".to_string()))?;
 
-        let records = self.load_source_data(source_config)?;
+        let records = self.load_source_data(source_config.clone()).await?;
         let count_per = self.config.count_per_example.unwrap_or(1);
         let system_prompt = Some(prompt_builder.system_prompt().to_string());
 
@@ -231,22 +231,27 @@ impl GenerationEngine {
         Ok(tasks)
     }
 
-    fn load_source_data(&self, source_config: &SourceConfig) -> Result<Vec<Record>> {
-        match source_config {
-            SourceConfig::HuggingFace { dataset, subset, split, sample, columns } => {
-                let mut source = HuggingFaceSource::new(
-                    dataset.clone(),
-                    subset.clone(),
-                    split.clone(),
-                    columns.clone(),
-                )?;
-                source.load(*sample)
+    async fn load_source_data(&self, source_config: SourceConfig) -> Result<Vec<Record>> {
+        // Run blocking IO operations in a separate thread pool
+        tokio::task::spawn_blocking(move || {
+            match source_config {
+                SourceConfig::HuggingFace { dataset, subset, split, sample, columns } => {
+                    let mut source = HuggingFaceSource::new(
+                        dataset,
+                        subset,
+                        split,
+                        columns,
+                    )?;
+                    source.load(sample)
+                }
+                SourceConfig::Local { path, format, sample } => {
+                    let mut source = LocalSource::new(path, format)?;
+                    source.load(sample)
+                }
             }
-            SourceConfig::Local { path, format, sample } => {
-                let mut source = LocalSource::new(path.clone(), format.clone())?;
-                source.load(*sample)
-            }
-        }
+        })
+        .await
+        .map_err(|e| Error::Dataset(format!("Task join error: {}", e)))?
     }
 
     fn create_prompt_builder(&self) -> PromptBuilder {

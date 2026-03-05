@@ -164,7 +164,7 @@ impl LLMProvider for AnthropicProvider {
 
 fn get_model_pricing(model: &str) -> ModelPricing {
     match model {
-        m if m.contains("claude-4-6-sonnet") || m.contains("claude-4.6-sonnet") => ModelPricing {
+        m if m.contains("claude-haiku-4-5-20251001") || m.contains("claude-4.6-sonnet") => ModelPricing {
             input_per_million: 3.00,
             output_per_million: 15.00,
         },
@@ -176,7 +176,7 @@ fn get_model_pricing(model: &str) -> ModelPricing {
             input_per_million: 15.00,
             output_per_million: 75.00,
         },
-        m if m.contains("claude-3-sonnet") => ModelPricing {
+        m if m.contains("claude-haiku-4-5-20251001") => ModelPricing {
             input_per_million: 3.00,
             output_per_million: 15.00,
         },
@@ -197,7 +197,7 @@ mod tests {
 
     #[test]
     fn test_model_pricing_sonnet() {
-        let pricing = get_model_pricing("claude-3-5-sonnet-20241022");
+        let pricing = get_model_pricing("claude-haiku-4-5-20251001");
         assert_eq!(pricing.input_per_million, 3.00);
         assert_eq!(pricing.output_per_million, 15.00);
     }
@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn test_cost_estimation() {
         let provider = AnthropicProvider::new(
-            "claude-3-5-sonnet-20241022".to_string(),
+            "claude-haiku-4-5-20251001".to_string(),
             Some("test-key".to_string()),
             None,
             None,
@@ -234,7 +234,7 @@ mod tests {
     #[test]
     fn test_provider_name_and_model() {
         let provider = AnthropicProvider::new(
-            "claude-3-5-sonnet-20241022".to_string(),
+            "claude-haiku-4-5-20251001".to_string(),
             Some("test-key".to_string()),
             Some(0.7),
             Some(2000),
@@ -242,14 +242,14 @@ mod tests {
         .unwrap();
 
         assert_eq!(provider.name(), "anthropic");
-        assert_eq!(provider.model(), "claude-3-5-sonnet-20241022");
+        assert_eq!(provider.model(), "claude-haiku-4-5-20251001");
     }
 
     #[test]
     fn test_missing_api_key_error() {
         unsafe { std::env::remove_var("ANTHROPIC_API_KEY") };
         let result = AnthropicProvider::new(
-            "claude-3-5-sonnet-20241022".to_string(),
+            "claude-haiku-4-5-20251001".to_string(),
             None,
             None,
             None,

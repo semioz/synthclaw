@@ -78,7 +78,7 @@ fn build_config_from_args(args: &GenerateArgs) -> anyhow::Result<SynthConfig> {
         .clone()
         .unwrap_or_else(|| match provider_str.as_str() {
             "openai" => "gpt-4o-mini".to_string(),
-            "anthropic" => "claude-3-5-sonnet-20241022".to_string(),
+            "anthropic" => "claude-haiku-4-5-20251001".to_string(),
             _ => "gpt-4o-mini".to_string(),
         });
 

@@ -1,0 +1,21 @@
+name: "test_reviews"
+
+provider:
+  type: openai
+  model: "gpt-4o-mini"
+
+generation:
+  task: generate
+  count: 6
+  concurrency: 2
+  categories:
+    - positive
+    - negative
+    - neutral
+  template: |
+    Generate a realistic {category} product review for an electronic device.
+    Keep it to 1-2 sentences. Output only the review text.
+
+output:
+  format: jsonl
+  path: "./output/test_reviews.jsonl"

@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn test_create_anthropic_provider() {
         let config = ProviderConfig::Anthropic {
-            model: "claude-3-5-sonnet-20241022".to_string(),
+            model: "claude-haiku-4-5-20251001".to_string(),
             api_key: Some("test-key".to_string()),
             temperature: None,
             max_tokens: None,
@@ -102,6 +102,6 @@ mod tests {
 
         let provider = create_provider(&config).unwrap();
         assert_eq!(provider.name(), "anthropic");
-        assert_eq!(provider.model(), "claude-3-5-sonnet-20241022");
+        assert_eq!(provider.model(), "claude-haiku-4-5-20251001");
     }
 }
