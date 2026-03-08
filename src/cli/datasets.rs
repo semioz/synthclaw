@@ -104,15 +104,43 @@ async fn info(args: InfoArgs) -> anyhow::Result<()> {
 }
 
 async fn preview(args: PreviewArgs) -> anyhow::Result<()> {
+    let info = get_dataset_info(&args.dataset).await?;
+    
+    let split = if info.splits.iter().any(|s| s.name == args.split) {
+        args.split.clone()
+    } else {
+        let first_split = info.splits.first()
+            .map(|s| s.name.clone())
+            .unwrap_or_else(|| "train".to_string());
+        
+        if args.split == "train" {
+            println!(
+                "{} Split '{}' not found, using '{}' instead",
+                style("⚠").yellow().bold(),
+                args.split,
+                first_split
+            );
+        } else {
+            println!(
+                "{} Split '{}' not found. Available splits: {}",
+                style("⚠").yellow().bold(),
+                args.split,
+                info.splits.iter().map(|s| s.name.as_str()).collect::<Vec<_>>().join(", ")
+            );
+            println!("  Using '{}' instead", first_split);
+        }
+        first_split
+    };
+
     println!(
         "{} Previewing: {} (split: {}, rows: {})",
         style("→").cyan().bold(),
         style(&args.dataset).green(),
-        args.split,
+        split,
         args.rows
     );
 
-    let rows = preview_dataset(&args.dataset, args.subset.as_deref(), &args.split, args.rows).await?;
+    let rows = preview_dataset(&args.dataset, args.subset.as_deref(), &split, args.rows).await?;
 
     println!("\n{}", style("Preview:").bold());
     for (i, row) in rows.iter().enumerate() {
