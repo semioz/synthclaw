@@ -56,6 +56,44 @@ pub struct GenerationResult {
     pub output_tokens: u32,
 }
 
+impl GenerationResult {
+    /// Parse content as JSON, extracting from markdown code blocks if needed
+    pub fn parse_json(&self) -> Result<serde_json::Value> {
+        let content = self.extract_json_content();
+        serde_json::from_str(&content).map_err(|e| Error::Json(e))
+    }
+
+    /// Parse content as a typed JSON object
+    pub fn parse_json_as<T: serde::de::DeserializeOwned>(&self) -> Result<T> {
+        let content = self.extract_json_content();
+        serde_json::from_str(&content).map_err(|e| Error::Json(e))
+    }
+
+    fn extract_json_content(&self) -> String {
+        let content = self.content.trim();
+
+        // Try ```json blocks
+        if let Some(start) = content.find("```json") {
+            if let Some(end) = content[start + 7..].find("```") {
+                return content[start + 7..start + 7 + end].trim().to_string();
+            }
+        }
+
+        // Try generic ``` blocks
+        if let Some(start) = content.find("```") {
+            if let Some(end) = content[start + 3..].find("```") {
+                let inner = content[start + 3..start + 3 + end].trim();
+                if let Some(newline) = inner.find('\n') {
+                    return inner[newline + 1..].trim().to_string();
+                }
+                return inner.to_string();
+            }
+        }
+
+        content.to_string()
+    }
+}
+
 struct GenerationTask_ {
     prompt: String,
     system_prompt: Option<String>,
@@ -329,6 +367,7 @@ mod tests {
                 path: "./output.jsonl".into(),
                 batch_size: 100,
             },
+            validation: None,
         }
     }
 

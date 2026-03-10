@@ -196,6 +196,21 @@ generation:
     Schema: {"text": "...", "label": "..."}
 ```
 
+### Validation
+
+Filter bad outputs and remove duplicates:
+
+```yaml
+validation:
+  min_length: 20
+  max_length: 1000
+  json: true                    # must be valid JSON
+  json_schema: [question, answer]  # required fields
+  blocklist: true               # filter "Sure!", "As an AI", etc.
+  repetition: true              # filter repetitive text
+  dedupe: normalized            # exact | normalized | jaccard
+```
+
 ## Library Usage
 
 ```rust
@@ -226,6 +241,28 @@ let response = provider.generate(GenerationRequest {
 }).await?;
 ```
 
+### Validation (Library)
+
+```rust
+use synth_claw::validation::{
+    ValidationPipeline, MinLength, Json, JsonSchema, Blocklist,
+    Deduplicator, validate_and_dedupe,
+};
+
+let results = engine.run(&config).await?;
+
+let pipeline = ValidationPipeline::new()
+    .add(MinLength(20))
+    .add(Json)
+    .add(JsonSchema::require(&["question", "answer"]))
+    .add(Blocklist::llm_artifacts());
+
+let validated = validate_and_dedupe(results, &pipeline, Some(&Deduplicator::Normalized));
+
+println!("passed: {}, failed: {}", validated.stats.passed, validated.stats.failed);
+for r in validated.results { /* clean data */ }
+```
+
 ## Output Formats
 
 - `jsonl` - Line-delimited JSON (recommended for large datasets)
@@ -239,14 +276,18 @@ OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-## Project Structure
+## Roadmap
 
-```
-src/
-  cli/           CLI commands
-  config/        YAML config schema
-  datasets/      Data sources (HuggingFace, local files)
-  providers/     LLM providers (OpenAI, Anthropic)
-  generation/    Generation engine
-  output/        Output writers (JSONL, CSV, Parquet)
-```
+### Production Scale
+- [ ] Streaming pipeline (generate → validate → write, no memory accumulation)
+- [ ] Checkpointing & resume
+- [ ] Retry with exponential backoff
+- [ ] Rate limiting
+- [ ] Budget limits
+
+### Providers
+- [ ] Gemini, Ollama, Azure OpenAI, Together AI, Groq
+
+### Integration
+- [ ] HuggingFace Hub upload
+- [ ] Dataset cards

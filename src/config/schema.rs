@@ -10,6 +10,8 @@ pub struct SynthConfig {
     pub provider: ProviderConfig,
     pub generation: GenerationConfig,
     pub output: OutputConfig,
+    #[serde(default)]
+    pub validation: Option<ValidationConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -138,6 +140,32 @@ pub enum OutputFormat {
     Parquet,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ValidationConfig {
+    #[serde(default)]
+    pub min_length: Option<usize>,
+    #[serde(default)]
+    pub max_length: Option<usize>,
+    #[serde(default)]
+    pub json: bool,
+    #[serde(default)]
+    pub json_schema: Option<Vec<String>>,
+    #[serde(default)]
+    pub blocklist: bool,
+    #[serde(default)]
+    pub repetition: bool,
+    #[serde(default)]
+    pub dedupe: Option<DedupeStrategy>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DedupeStrategy {
+    Exact,
+    Normalized,
+    Jaccard,
+}
+
 impl SynthConfig {
     pub fn from_yaml(content: &str) -> crate::Result<Self> {
         serde_yaml::from_str(content).map_err(Into::into)
@@ -221,5 +249,46 @@ output:
         assert!(matches!(config.provider, ProviderConfig::Anthropic { .. }));
         assert!(matches!(config.generation.task, GenerationTask::Generate));
         assert_eq!(config.generation.categories.as_ref().unwrap().len(), 3);
+    }
+
+    #[test]
+    fn test_parse_validation_config() {
+        let yaml = r#"
+name: "with_validation"
+
+provider:
+  type: openai
+  model: "gpt-4o-mini"
+
+generation:
+  task: generate
+  count: 10
+  template: "Generate JSON: {\"q\": \"...\", \"a\": \"...\"}"
+
+output:
+  format: jsonl
+  path: "./output.jsonl"
+
+validation:
+  min_length: 20
+  max_length: 1000
+  json: true
+  json_schema:
+    - question
+    - answer
+  blocklist: true
+  repetition: true
+  dedupe: normalized
+"#;
+
+        let config = SynthConfig::from_yaml(yaml).unwrap();
+        let v = config.validation.unwrap();
+        assert_eq!(v.min_length, Some(20));
+        assert_eq!(v.max_length, Some(1000));
+        assert!(v.json);
+        assert_eq!(v.json_schema.unwrap(), vec!["question", "answer"]);
+        assert!(v.blocklist);
+        assert!(v.repetition);
+        assert!(matches!(v.dedupe, Some(DedupeStrategy::Normalized)));
     }
 }

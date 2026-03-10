@@ -3,6 +3,7 @@ pub mod datasets;
 pub mod generation;
 pub mod output;
 pub mod providers;
+pub mod validation;
 
 mod error;
 

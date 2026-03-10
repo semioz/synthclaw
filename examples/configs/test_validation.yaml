@@ -1,0 +1,30 @@
+name: "test_validation"
+
+provider:
+  type: openai
+  model: "gpt-4o-mini"
+  temperature: 0.7
+
+generation:
+  task: generate
+  count: 10
+  concurrency: 3
+  template: |
+    Generate a Q&A pair about programming as JSON.
+    Output: {"question": "...", "answer": "..."}
+  system_prompt: |
+    Output ONLY valid JSON. No markdown, no explanation.
+
+output:
+  format: jsonl
+  path: "./output/qa_validated.jsonl"
+
+validation:
+  min_length: 20
+  json: true
+  json_schema:
+    - question
+    - answer
+  blocklist: true
+  repetition: true
+  dedupe: normalized
