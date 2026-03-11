@@ -1,0 +1,34 @@
+name: "qa_with_upload"
+
+provider:
+  type: openai
+  model: "gpt-4o-mini"
+  temperature: 0.7
+
+generation:
+  task: generate
+  count: 10
+  concurrency: 5
+  template: |
+    Generate critics about the Roman Empire in QA format.
+    Output JSON: {"question": "...", "answer": "..."}
+  system_prompt: |
+    Output ONLY valid JSON. No markdown.
+
+output:
+  format: jsonl
+  path: "./output/qa.jsonl"
+
+validation:
+  min_length: 30
+  json: true
+  json_schema:
+    - question
+    - answer
+  blocklist: true
+  dedupe: normalized
+
+hub:
+  repo: "username/datasetname"
+  private: false
+  # token: "hf_..."  # or set HF_TOKEN env var

@@ -49,6 +49,7 @@ async-trait = "0.1"
 
 # Logging
 tracing = "0.1"
+base64 = "0.22"
 
 [[bin]]
 name = "synthclaw"

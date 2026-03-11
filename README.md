@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/synthclaw.svg)](https://crates.io/crates/synthclaw)
 [![Documentation](https://docs.rs/synthclaw/badge.svg)](https://docs.rs/synthclaw)
 
-Lightweight synthetic data generation in Rust. Generate and augment datasets using OpenAI, Anthropic with support for HuggingFace datasets.
+Synthetic data generation in Rust. Generate and augment datasets using OpenAI, Anthropic with support for HuggingFace datasets.
 
 Available as both a CLI tool and a Rust library.
 
@@ -19,7 +19,7 @@ cargo install synthclaw
 
 ```toml
 [dependencies]
-synthclaw = "0.1"
+synthclaw = "0.1.3"
 ```
 
 ## Quick Start
@@ -211,6 +211,17 @@ validation:
   dedupe: normalized            # exact | normalized | jaccard
 ```
 
+### Upload to HuggingFace Hub
+
+```yaml
+hub:
+  repo: "username/my-dataset"
+  private: false
+  token: "hf_..."  # or set HF_TOKEN env var, or `huggingface-cli login`
+```
+
+Token is resolved in order: config → `HF_TOKEN` env → `~/.cache/huggingface/token`
+
 ## Library Usage
 
 ```rust
@@ -263,6 +274,25 @@ println!("passed: {}, failed: {}", validated.stats.passed, validated.stats.faile
 for r in validated.results { /* clean data */ }
 ```
 
+### Upload to HuggingFace Hub
+
+```rust
+use synth_claw::hub::DatasetUploader;
+
+let uploader = DatasetUploader::new("username/my-dataset", false, None).await?;
+
+// Upload JSONL data
+let data = vec![json!({"q": "...", "a": "..."})];
+uploader.upload_jsonl(&data, "train.jsonl").await?;
+
+// Upload any file
+uploader.upload("README.md", readme.as_bytes(), Some("Add README")).await?;
+
+println!("Dataset: {}", uploader.repo_url());
+```
+
+Requires `HF_TOKEN` env var.
+
 ## Output Formats
 
 - `jsonl` - Line-delimited JSON (recommended for large datasets)
@@ -274,6 +304,7 @@ for r in validated.results { /* clean data */ }
 ```bash
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
+HF_TOKEN=hf_...  # for uploading to HuggingFace Hub
 ```
 
 ## Roadmap
@@ -289,5 +320,5 @@ ANTHROPIC_API_KEY=sk-ant-...
 - [ ] Gemini, Ollama, Azure OpenAI, Together AI, Groq
 
 ### Integration
-- [ ] HuggingFace Hub upload
+- [x] HuggingFace Hub upload
 - [ ] Dataset cards

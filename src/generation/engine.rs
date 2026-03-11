@@ -368,6 +368,7 @@ mod tests {
                 batch_size: 100,
             },
             validation: None,
+            hub: None,
         }
     }
 

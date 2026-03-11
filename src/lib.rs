@@ -1,6 +1,7 @@
 pub mod config;
 pub mod datasets;
 pub mod generation;
+pub mod hub;
 pub mod output;
 pub mod providers;
 pub mod validation;

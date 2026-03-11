@@ -3,8 +3,10 @@ use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::path::PathBuf;
 use synth_claw::config::SynthConfig;
-use synth_claw::generation::GenerationEngine;
+use synth_claw::generation::{GenerationEngine, GenerationResult};
+use synth_claw::hub::DatasetUploader;
 use synth_claw::output::create_writer;
+use synth_claw::validation::{validate_and_dedupe, Deduplicator, ValidationPipeline};
 
 #[derive(Args)]
 pub struct GenerateArgs {
@@ -125,6 +127,7 @@ fn build_config_from_args(args: &GenerateArgs) -> anyhow::Result<SynthConfig> {
             batch_size: 100,
         },
         validation: None,
+        hub: None,
     })
 }
 
@@ -155,6 +158,8 @@ async fn run_generation(config: &SynthConfig) -> anyhow::Result<()> {
     
     pb.finish_and_clear();
 
+    let results = apply_validation(config, results);
+
     let mut writer = create_writer(&config.output.format, config.output.path.clone())?;
     for result in &results {
         writer.write(result)?;
@@ -175,5 +180,58 @@ async fn run_generation(config: &SynthConfig) -> anyhow::Result<()> {
     println!("  Estimated cost: ${:.4}", cost);
     println!("\n  Output: {}", style(config.output.path.display()).cyan());
 
+    if let Some(hub_config) = &config.hub {
+        if hub_config.repo.is_some() {
+            if let Err(e) = upload_to_hub(&results, hub_config, &config.output.path).await {
+                println!("  {} Upload failed: {}", style("✗").red(), e);
+            }
+        }
+    }
+
     Ok(())
+}
+
+async fn upload_to_hub(
+    _results: &[GenerationResult],
+    hub_config: &synth_claw::config::HubConfig,
+    output_path: &PathBuf,
+) -> anyhow::Result<()> {
+    println!("\n{} Uploading to HuggingFace Hub...", style("→").cyan().bold());
+    
+    let uploader = DatasetUploader::from_config(hub_config).await?;
+    
+    let filename = output_path.file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("data.jsonl");
+    
+    uploader.upload_file(output_path, filename, Some("Upload generated data")).await?;
+    
+    println!("  {} {}", style("✓").green(), filename);
+    println!("  {}", style(uploader.repo_url()).cyan());
+    
+    Ok(())
+}
+
+fn apply_validation(config: &SynthConfig, results: Vec<GenerationResult>) -> Vec<GenerationResult> {
+    let Some(val_config) = &config.validation else {
+        return results;
+    };
+
+    let pipeline = ValidationPipeline::from_config(val_config);
+    let dedup = val_config.dedupe.as_ref().map(Deduplicator::from);
+
+    let validated = validate_and_dedupe(results, &pipeline, dedup.as_ref());
+
+    if validated.stats.failed > 0 || validated.stats.duplicates_removed > 0 {
+        println!("\n{}", style("Validation:").bold());
+        if validated.stats.failed > 0 {
+            println!("  Rejected: {}", style(validated.stats.failed).yellow());
+        }
+        if validated.stats.duplicates_removed > 0 {
+            println!("  Duplicates removed: {}", style(validated.stats.duplicates_removed).yellow());
+        }
+        println!("  Final count: {}", style(validated.stats.passed).green());
+    }
+
+    validated.results
 }

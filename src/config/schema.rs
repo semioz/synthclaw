@@ -12,6 +12,8 @@ pub struct SynthConfig {
     pub output: OutputConfig,
     #[serde(default)]
     pub validation: Option<ValidationConfig>,
+    #[serde(default)]
+    pub hub: Option<HubConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -164,6 +166,16 @@ pub enum DedupeStrategy {
     Exact,
     Normalized,
     Jaccard,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct HubConfig {
+    #[serde(default)]
+    pub token: Option<String>,
+    #[serde(default)]
+    pub repo: Option<String>,
+    #[serde(default)]
+    pub private: bool,
 }
 
 impl SynthConfig {
